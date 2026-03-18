@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XYZ STORE - Public Catalog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b0f1a; color: white; overflow-x: hidden; }
+        /* Animasi Salju */
+        .snowflake { position: fixed; top: -10px; z-index: 1; user-select: none; cursor: default; animation-name: snowflakes-fall, snowflakes-shake; animation-duration: 10s, 3s; animation-timing-function: linear, ease-in-out; animation-iteration-count: infinite, infinite; animation-play-state: running, running; }
+        .snowflake, .snowflake .inner { animation-iteration-count: infinite; animation-play-state: running; }
+        @keyframes snowflakes-fall { 0% {top:-10%} 100% {top:100%} }
+        @keyframes snowflakes-shake { 0%,100% {transform:translateX(0px)} 50% {transform:translateX(80px)} }
+        .snowflake:nth-of-type(0){left:1%;animation-delay:0s,0s}
+        .snowflake:nth-of-type(1){left:10%;animation-delay:1s,1s}
+        .snowflake:nth-of-type(2){left:20%;animation-delay:6s,0.5s}
+        .snowflake:nth-of-type(3){left:30%;animation-delay:4s,2s}
+        .snowflake:nth-of-type(4){left:40%;animation-delay:2s,2s}
+        .snowflake:nth-of-type(5){left:50%;animation-delay:8s,3s}
+        .snowflake:nth-of-type(6){left:60%;animation-delay:6s,2s}
+        .snowflake:nth-of-type(7){left:70%;animation-delay:2s,1s}
+        .snowflake:nth-of-type(8){left:80%;animation-delay:1s,0s}
+        .snowflake:nth-of-type(9){left:90%;animation-delay:3s,1.5s}
+
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+
+    <div class="snowflakes" aria-hidden="true">
+        <div class="snowflake">❅</div><div class="snowflake">❅</div><div class="snowflake">❆</div><div class="snowflake">❅</div><div class="snowflake">❆</div><div class="snowflake">❅</div><div class="snowflake">❅</div><div class="snowflake">❆</div><div class="snowflake">❅</div><div class="snowflake">❆</div>
+    </div>
+
+    <header class="max-w-6xl mx-auto text-center my-12 relative z-10">
+        <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 italic">XYZ STORE</h1>
+        <p class="text-slate-400 mt-2 tracking-widest uppercase text-xs">Snowy Public Catalog</p>
+        <button onclick="toggleAdmin()" class="mt-4 text-xs text-slate-600 underline">Post Akun Baru</button>
+    </header>
+
+    <div id="admin-panel" class="hidden max-w-xl mx-auto mb-12 glass p-6 rounded-2xl relative z-10">
+        <h2 class="text-xl font-bold mb-4 text-blue-400">Post Akun Baru (Publik)</h2>
+        <div class="space-y-3">
+            <input type="text" id="p-nama" placeholder="Nama Game / Akun" class="w-full p-3 bg-slate-900 rounded-lg border border-slate-700 outline-none">
+            <input type="text" id="p-harga" placeholder="Harga (misal: 150.000)" class="w-full p-3 bg-slate-900 rounded-lg border border-slate-700 outline-none">
+            <input type="text" id="p-foto" placeholder="Link URL Foto Akun (Opsional)" class="w-full p-3 bg-slate-900 rounded-lg border border-slate-700 outline-none">
+            <textarea id="p-desc" placeholder="Deskripsi lengkap akun..." class="w-full p-3 bg-slate-900 rounded-lg border border-slate-700 outline-none h-24"></textarea>
+            <button onclick="kirimProduk()" id="btn-kirim" class="w-full bg-blue-600 p-3 rounded-lg font-bold hover:bg-blue-500">POST KE PUBLIK</button>
+        </div>
+    </div>
+
+    <main class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10" id="display-produk">
+        <p class="text-center text-slate-500 col-span-full">Memuat stok...</p>
+    </main>
+
+    <footer class="mt-20 text-center border-t border-slate-800 pt-10 pb-10 relative z-10">
+        <p class="text-slate-500 text-sm mb-4">Payment: Dana / Gopay (085183122570)</p>
+        <button onclick="hubungiOperator()" class="glass px-6 py-2 rounded-full text-sm hover:bg-blue-500/20 transition">
+            Hubungi Operator: 085183122570
+        </button>
+    </footer>
+
+    <script>
+        const WA_NOMOR = "6285183122570";
+
+        // 1. Ambil Data dari Database Vercel (Publik)
+        async function fetchProduk() {
+            const container = document.getElementById('display-produk');
+            try {
+                const response = await fetch('/api/produk');
+                const data = await response.json();
+                
+                if (data.products && data.products.length > 0) {
+                    container.innerHTML = '';
+                    data.products.forEach(item => {
+                        const imgTag = item.foto ? `<img src="${item.foto}" alt="${item.nama}" class="w-full h-40 object-cover rounded-lg mb-4 border border-slate-700">` : '';
+                        
+                        container.innerHTML += `
+                            <div class="glass p-5 rounded-2xl flex flex-col justify-between hover:border-blue-500 transition">
+                                <div>
+                                    ${imgTag}
+                                    <h3 class="text-xl font-bold text-white">${item.nama}</h3>
+                                    <p class="text-slate-400 text-sm mt-2 mb-4 whitespace-pre-wrap">${item.deskripsi || ''}</p>
+                                </div>
+                                <div class="flex justify-between items-center border-t border-slate-700 pt-4 mt-auto">
+                                    <span class="text-lg font-mono font-bold text-green-400">Rp${item.harga}</span>
+                                    <button onclick="beli('${item.nama}', '${item.harga}')" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-bold">BELI</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    container.innerHTML = '<p class="text-center text-slate-500 col-span-full">Stok kosong, Min.</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p class="text-center text-red-500 col-span-full">Gagal memuat database.</p>';
+            }
+        }
+
+        // 2. Kirim Data ke Database (Input dari Web)
+        async function kirimProduk() {
+            const btn = document.getElementById('btn-kirim');
+            const payload = {
+                nama: document.getElementById('p-nama').value,
+                harga: document.getElementById('p-harga').value,
+                foto: document.getElementById('p-foto').value,
+                deskripsi: document.getElementById('p-desc').value
+            };
+
+            if(!payload.nama || !payload.harga) return alert("Min, nama ama harga wajib diisi!");
+            
+            btn.innerText = "Mempublish...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/produk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    alert(result.message);
+                    // Reset Form
+                    document.getElementById('p-nama').value = '';
+                    document.getElementById('p-harga').value = '';
+                    document.getElementById('p-foto').value = '';
+                    document.getElementById('p-desc').value = '';
+                    toggleAdmin(); // tutup panel
+                    fetchProduk(); // refresh list
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (error) {
+                alert("Gagal koneksi ke server.");
+            } finally {
+                btn.innerText = "POST KE PUBLIK";
+                btn.disabled = false;
+            }
+        }
+
+        // Integrasi WA
+        function beli(nama, harga) {
+            const teks = `Halo Min, saya mau beli *${nama}* seharga *Rp${harga}*. Ready stoknya?`;
+            window.open(`https://wa.me/${WA_NOMOR}?text=${encodeURIComponent(teks)}`, '_blank');
+        }
+
+        function hubungiOperator() {
+            window.open(`https://wa.me/${WA_NOMOR}?text=Halo Min, butuh bantuan operator.`, '_blank');
+        }
+
+        function toggleAdmin() {
+            document.getElementById('admin-panel').classList.toggle('hidden');
+        }
+
+        // Load data saat web dibuka
+        fetchProduk();
+    </script>
+</body>
+</html>
