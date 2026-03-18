@@ -1,0 +1,16 @@
+{
+  "name": "xyz-store-pro",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "start": "servor"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/postgres": "^0.5.1",
+    "servor": "^4.0.0"
+  }
+}
