@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XYZ STORE - Katalog Akun</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b0f1a; color: white; font-family: 'sans-serif'; overflow-x: hidden; }
+        .rain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+        .drop { position: absolute; bottom: 100%; width: 1px; height: 25px; background: rgba(0, 191, 255, 0.3); animation: fall linear infinite; }
+        @keyframes fall { to { transform: translateY(110vh); } }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .sold-overlay { background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; position: absolute; inset: 0; z-index: 10; }
+    </style>
+</head>
+<body class="min-h-screen pb-24">
+
+    <div class="rain" id="rain-container"></div>
+
+    <header class="p-8 text-center">
+        <h1 class="text-4xl font-black italic tracking-tighter text-blue-500">XYZ STORE</h1>
+        <p class="text-[10px] text-slate-500 tracking-[0.4em] uppercase mt-1 font-bold">Premium Digital Market</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-6" id="product-list">
+        </main>
+
+    <button onclick="bukaModal()" class="fixed bottom-8 right-8 w-16 h-16 bg-blue-600 rounded-full text-3xl font-bold shadow-lg shadow-blue-500/50 hover:scale-110 transition active:scale-90 z-40">
+        +
+    </button>
+
+    <div id="modal-form" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden z-50 p-6 overflow-y-auto">
+        <div class="max-w-md mx-auto bg-slate-900 border border-slate-800 p-6 rounded-3xl mt-10">
+            <h2 class="text-xl font-bold mb-6 text-blue-400 font-mono tracking-tighter uppercase italic">Upload Stok Baru (Lokal)</h2>
+            
+            <div class="space-y-4 text-sm">
+                <input type="text" id="nama-game" placeholder="Nama Game (AKUN FC)" class="w-full p-3 bg-slate-800 rounded-xl outline-none border border-slate-700">
+                <input type="text" id="harga-game" placeholder="Harga (50.000)" class="w-full p-3 bg-slate-800 rounded-xl outline-none border border-slate-700">
+                <textarea id="desc-game" placeholder="Spek: Full Icon, OVR 100, dll" class="w-full p-3 bg-slate-800 rounded-xl outline-none border border-slate-700 h-20"></textarea>
+                <input type="file" id="foto-input" accept="image/*" multiple class="w-full text-xs text-slate-500">
+            </div>
+
+            <div class="flex gap-3 mt-8">
+                <button onclick="simpanPostingan()" class="flex-grow bg-blue-600 p-3 rounded-xl font-bold">POSTING LOKAL</button>
+                <button onclick="tutupModal()" class="px-6 bg-slate-700 p-3 rounded-xl font-bold italic text-sm text-red-400">X</button>
+            </div>
+            <p class="text-red-400 text-[10px] mt-3 text-center italic">*Data yang ditambah di sini hanya tampil di HP/Browser ini saja.</p>
+        </div>
+    </div>
+
+    <footer class="mt-20 text-center py-10 opacity-30 text-[10px]">
+        XYZ STORE &copy; 2026 | Operator: 085183122570
+    </footer>
+
+    <script>
+        const WA_NOMOR = "6285183122570";
+        let uploadedImages = [];
+
+        // ==========================================
+        // DATABASE KATALOG PUBLIC
+        // Tambahkan stok akun kamu di sini supaya bisa dilihat SEMUA ORANG
+        // ==========================================
+        const katalogPublic = [
+            {
+                nama: "AKUN FC MOBILE OVR 100",
+                harga: "150.000",
+                desc: "Spek: Full Icon, OVR 100, Login FB aman. Siap ganti data.",
+                foto: ["https://images.unsplash.com/photo-1606901302992-8636bea99ef1?w=500&q=80"],
+                sold: false
+            },
+            {
+                nama: "AKUN MLBB MYTHIC",
+                harga: "250.000",
+                desc: "Skin Legends 2, Epic Limit 10. WR 60%. Login Moonton.",
+                foto: ["https://images.unsplash.com/photo-1542751371-adc38448a05e?w=500&q=80"],
+                sold: true // Ubah ke false kalau belum laku
+            }
+        ];
+        // ==========================================
+
+        function bukaModal() { document.getElementById('modal-form').classList.remove('hidden'); }
+        function tutupModal() { document.getElementById('modal-form').classList.add('hidden'); }
+
+        // Kompres Foto (Hanya untuk upload lokal)
+        document.getElementById('foto-input').onchange = function(e) {
+            uploadedImages = [];
+            Array.from(e.target.files).slice(0, 3).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = f => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const scale = 500 / img.width;
+                        canvas.width = 500; canvas.height = img.height * scale;
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                        uploadedImages.push(canvas.toDataURL('image/jpeg', 0.6));
+                    };
+                    img.src = f.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        };
+
+        function simpanPostingan() {
+            const nama = document.getElementById('nama-game').value;
+            const harga = document.getElementById('harga-game').value;
+            const desc = document.getElementById('desc-game').value;
+            if(!nama || !harga || uploadedImages.length === 0) return alert("Min, isi semua datanya!");
+
+            const data = JSON.parse(localStorage.getItem('xyz_db')) || [];
+            data.unshift({ nama, harga, desc, foto: uploadedImages, sold: false, isLocal: true });
+            localStorage.setItem('xyz_db', JSON.stringify(data));
+            location.reload();
+        }
+
+        function renderStore() {
+            // Menggabungkan data lokal dan data public
+            const dataLokal = JSON.parse(localStorage.getItem('xyz_db')) || [];
+            const allData = [...dataLokal, ...katalogPublic];
+            
+            const container = document.getElementById('product-list');
+            container.innerHTML = ''; // Bersihkan kontainer sebelum render
+            
+            allData.forEach((item, idx) => {
+                let slides = item.foto.map(f => `<img src="${f}" class="w-full h-56 object-cover flex-shrink-0">`).join('');
+                
+                // Jika isLocal true (dari localStorage), tombol hapus pakai index lokal. 
+                // Jika dari public, kita sembunyikan tombol hapus/sold karena harus edit kode.
+                let adminButtons = item.isLocal 
+                    ? `<button onclick="tandaiSoldLokal(${idx})" class="text-[10px] bg-yellow-600/20 text-yellow-500 px-2 py-1 rounded">Sold (Lokal)</button>
+                       <button onclick="hapusPostLokal(${idx})" class="text-[10px] bg-red-600/20 text-red-500 px-2 py-1 rounded">Hapus (Lokal)</button>`
+                    : `<span class="text-[10px] bg-blue-600/20 text-blue-400 px-2 py-1 rounded border border-blue-500/30">Data Public</span>`;
+
+                container.innerHTML += `
+                    <div class="glass rounded-3xl overflow-hidden flex flex-col relative">
+                        ${item.sold ? '<div class="sold-overlay"><span class="text-red-500 font-black text-4xl border-4 border-red-500 px-4 py-2 rotate-[-15deg]">SOLD OUT</span></div>' : ''}
+                        <div class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar bg-black">${slides}</div>
+                        <div class="p-5">
+                            <div class="flex justify-between items-start">
+                                <h3 class="font-bold text-lg text-blue-400 italic">${item.nama}</h3>
+                                <div class="flex gap-2">
+                                    ${adminButtons}
+                                </div>
+                            </div>
+                            <p class="text-slate-500 text-xs mt-1 mb-4">${item.desc}</p>
+                            <div class="flex justify-between items-center pt-4 border-t border-white/5">
+                                <span class="font-black text-xl text-green-400 font-mono">Rp${item.harga}</span>
+                                ${!item.sold ? `<button onclick="beli('${item.nama}', '${item.harga}')" class="bg-blue-600 px-6 py-2 rounded-xl text-xs font-bold">BELI</button>` : '<span class="text-slate-600 italic text-xs uppercase font-bold">Laku</span>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function tandaiSoldLokal(idx) {
+            const data = JSON.parse(localStorage.getItem('xyz_db'));
+            data[idx].sold = !data[idx].sold;
+            localStorage.setItem('xyz_db', JSON.stringify(data));
+            location.reload();
+        }
+
+        function hapusPostLokal(idx) {
+            if(confirm("Hapus permanen promosi LOKAL ini, Min?")) {
+                const data = JSON.parse(localStorage.getItem('xyz_db'));
+                data.splice(idx, 1);
+                localStorage.setItem('xyz_db', JSON.stringify(data));
+                location.reload();
+            }
+        }
+
+        function beli(n, h) {
+            window.open(`https://wa.me/${WA_NOMOR}?text=Halo Min, mau beli akun *${n}* seharga *Rp${h}*. Ready?`, '_blank');
+        }
+
+        // Efek Hujan
+        const rainContainer = document.getElementById('rain-container');
+        for (let i = 0; i < 30; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'drop';
+            drop.style.left = Math.random() * 100 + 'vw';
+            drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
+            drop.style.animationDelay = Math.random() * 2 + 's';
+            rainContainer.appendChild(drop);
+        }
+
+        renderStore();
+    </script>
+</body>
+</html>
