@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XYZ STORE - Premium Catalog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b0f1a; color: white; overflow-x: hidden; font-family: 'Inter', sans-serif; }
+        .rain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+        .drop { position: absolute; bottom: 100%; width: 1px; height: 25px; background: rgba(0, 191, 255, 0.4); animation: fall linear infinite; }
+        @keyframes fall { to { transform: translateY(110vh); } }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .product-card:hover { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div class="rain" id="rain-container"></div>
+
+    <header class="max-w-6xl mx-auto text-center py-16 px-4">
+        <h1 class="text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-purple-500 italic mb-2">
+            XYZ STORE
+        </h1>
+        <p class="text-blue-400 font-mono text-xs tracking-[0.3em] uppercase opacity-70">Digital Goods & Account Specialist</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="display-produk">
+        </main>
+
+    <div id="admin-panel" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center p-6 z-50">
+        <div class="glass p-8 rounded-3xl w-full max-w-md border-blue-500/30">
+            <h2 class="text-2xl font-bold mb-6 text-blue-400 flex items-center gap-2">
+                <span>⚡</span> Admin Panel XYZ
+            </h2>
+            <div class="space-y-4">
+                <input type="text" id="p-nama" placeholder="Nama Akun (Contoh: AKUN FC)" class="w-full p-4 bg-slate-900/50 rounded-xl border border-slate-700 outline-none focus:border-blue-500">
+                <input type="text" id="p-harga" placeholder="Harga (Contoh: 50.000)" class="w-full p-4 bg-slate-900/50 rounded-xl border border-slate-700 outline-none focus:border-blue-500">
+                <input type="text" id="p-foto" placeholder="Link URL Foto Akun (Opsional)" class="w-full p-4 bg-slate-900/50 rounded-xl border border-slate-700 outline-none focus:border-blue-500 text-sm">
+                <textarea id="p-desc" placeholder="Detail akun..." class="w-full p-4 bg-slate-900/50 rounded-xl border border-slate-700 outline-none h-24 focus:border-blue-500"></textarea>
+                
+                <div class="flex gap-3 pt-4">
+                    <button onclick="simpanProduk()" class="flex-grow bg-blue-600 hover:bg-blue-500 p-4 rounded-xl font-bold transition">POST PRODUK</button>
+                    <button onclick="tutupAdmin()" class="px-6 bg-slate-800 rounded-xl font-bold">X</button>
+                </div>
+                <button onclick="hapusSemua()" class="w-full text-xs text-slate-600 mt-4 hover:text-red-400 transition">Reset Katalog</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-32 border-t border-white/5 bg-black/20 py-12 px-6 text-center">
+        <div class="max-w-md mx-auto">
+            <p class="text-slate-400 text-sm mb-6 uppercase tracking-widest">Metode Pembayaran</p>
+            <div class="flex justify-center gap-4 mb-8">
+                <span class="px-4 py-1 bg-blue-500/10 border border-blue-500/20 rounded text-blue-400 font-bold text-xs">DANA</span>
+                <span class="px-4 py-1 bg-purple-500/10 border border-purple-500/20 rounded text-purple-400 font-bold text-xs">GOPAY</span>
+            </div>
+            <button onclick="bukaWA('Bantuan Operator')" class="w-full glass py-4 rounded-2xl font-bold hover:bg-blue-500/10 transition mb-4">
+                Hubungi Operator: 085183122570
+            </button>
+            <p onclick="cekKlik()" class="text-slate-800 text-xs cursor-default select-none transition hover:text-slate-700">XYZ STORE © 2026</p>
+        </div>
+    </footer>
+
+    <script>
+        const WA_NOMOR = "6285183122570";
+        let klikCounter = 0;
+
+        function loadStore() {
+            const listProduk = JSON.parse(localStorage.getItem('xyz_products')) || [];
+            const container = document.getElementById('display-produk');
+            container.innerHTML = '';
+
+            listProduk.forEach((item, index) => {
+                const imgUrl = item.foto || `https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=500&auto=format&fit=crop`;
+                
+                container.innerHTML += `
+                    <div class="glass product-card rounded-3xl overflow-hidden flex flex-col transition duration-500 group">
+                        <div class="h-48 overflow-hidden relative">
+                            <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" alt="Produk">
+                            <div class="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] font-bold tracking-widest uppercase">STOK READY</div>
+                        </div>
+                        <div class="p-6 flex-grow">
+                            <h3 class="text-xl font-extrabold mb-2 group-hover:text-blue-400 transition italic">${item.nama}</h3>
+                            <p class="text-slate-400 text-sm leading-relaxed mb-6 opacity-80">${item.desc}</p>
+                            <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Harga</span>
+                                    <span class="text-2xl font-black text-green-400 font-mono">Rp${item.harga}</span>
+                                </div>
+                                <button onclick="beli('${item.nama}', '${item.harga}')" class="bg-blue-600 hover:bg-blue-400 text-white px-6 py-3 rounded-2xl font-black text-sm tracking-wider transition-all transform active:scale-95">
+                                    AMBIL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function simpanProduk() {
+            const nama = document.getElementById('p-nama').value;
+            const harga = document.getElementById('p-harga').value;
+            const desc = document.getElementById('p-desc').value;
+            const foto = document.getElementById('p-foto').value;
+
+            if(!nama || !harga) return alert("Min, isi minimal nama dan harga produk!");
+
+            const listProduk = JSON.parse(localStorage.getItem('xyz_products')) || [];
+            listProduk.push({ nama, harga, desc, foto });
+            localStorage.setItem('xyz_products', JSON.stringify(listProduk));
+            
+            // Reset & Close
+            document.querySelectorAll('#admin-panel input, #admin-panel textarea').forEach(el => el.value = '');
+            tutupAdmin();
+            loadStore();
+        }
+
+        function beli(nama, harga) {
+            const teks = `Halo Min, saya mau beli *${nama}* seharga *Rp${harga}*. Ready stoknya?`;
+            bukaWA(teks);
+        }
+
+        function bukaWA(pesan) {
+            window.open(`https://wa.me/${WA_NOMOR}?text=${encodeURIComponent(pesan)}`, '_blank');
+        }
+
+        function cekKlik() {
+            klikCounter++;
+            if(klikCounter >= 3) {
+                document.getElementById('admin-panel').classList.remove('hidden');
+                klikCounter = 0;
+            }
+        }
+
+        function tutupAdmin() { document.getElementById('admin-panel').classList.add('hidden'); }
+        
+        function hapusSemua() {
+            if(confirm("Hapus semua stok katalog, Min?")) {
+                localStorage.removeItem('xyz_products');
+                loadStore();
+                tutupAdmin();
+            }
+        }
+
+        // Animasi Hujan
+        const rainContainer = document.getElementById('rain-container');
+        for (let i = 0; i < 40; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'drop';
+            drop.style.left = Math.random() * 100 + 'vw';
+            drop.style.animationDuration = (Math.random() * 0.7 + 0.3) + 's';
+            drop.style.animationDelay = Math.random() * 2 + 's';
+            rainContainer.appendChild(drop);
+        }
+
+        loadStore();
+    </script>
+</body>
+</html>
