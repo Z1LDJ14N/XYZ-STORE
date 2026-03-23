@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XYZ AI Premium - Backend Integration</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* ... (gunakan CSS dari sebelumnya) ... */
+    </style>
+</head>
+<body>
+    <!-- ... (gunakan HTML structure dari sebelumnya) ... -->
+
+    <script>
+        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+        let authToken = localStorage.getItem('xyz_token');
+
+        // ============= API CALLS =============
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                }
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            const response = await fetch(`${API_URL}${endpoint}`, options);
+            return response.json();
+        }
+
+        // Register
+        async function registerUser(username, email, password) {
+            const result = await apiCall('/auth/register', 'POST', {
+                username,
+                email,
+                password
+            });
+
+            if (result.success) {
+                authToken = result.token;
+                localStorage.setItem('xyz_token', authToken);
+                currentUser = result.user;
+                localStorage.setItem('current_user', JSON.stringify(currentUser));
+            }
+
+            return result;
+        }
+
+        // Login
+        async function loginUser(email, password) {
+            const result = await apiCall('/auth/login', 'POST', {
+                email,
+                password
+            });
+
+            if (result.success) {
+                authToken = result.token;
+                localStorage.setItem('xyz_token', authToken);
+                currentUser = result.user;
+                localStorage.setItem('current_user', JSON.stringify(currentUser));
+            }
+
+            return result;
+        }
+
+        // Get user profile
+        async function getProfile() {
+            const result = await apiCall('/user/profile');
+            if (result.success) {
+                return result.user;
+            }
+            return null;
+        }
+
+        // Upgrade to premium
+        async function upgradePremium(paymentMethod) {
+            const result = await apiCall('/premium/upgrade', 'POST', {
+                paymentMethod
+            });
+
+            if (result.success) {
+                currentUser = result.user;
+                isPremium = true;
+                localStorage.setItem('current_user', JSON.stringify(currentUser));
+            }
+
+            return result;
+        }
+
+        // Send message
+        async function sendMessageViaAPI() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            const result = await apiCall('/chat/message', 'POST', {
+                message
+            });
+
+            if (!result.success) {
+                alert('❌ ' + result.error);
+                return;
+            }
+
+            // Continue dengan chat logic...
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            authToken = localStorage.getItem('xyz_token');
+            if (authToken) {
+                getProfile().then(user => {
+                    if (user) {
+                        currentUser = user;
+                        isPremium = user.premium;
+                        // Load UI...
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
