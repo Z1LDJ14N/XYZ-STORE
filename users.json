@@ -1,0 +1,24 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "demo_user",
+      "email": "demo@xyz.ai",
+      "password": "ZGVtbzEyMw==",
+      "premium": false,
+      "createdAt": "2025-03-23T00:00:00Z",
+      "messagesCount": 0,
+      "lastLogin": "2025-03-23T00:00:00Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "txn_001",
+      "userId": "1",
+      "amount": 5000,
+      "status": "completed",
+      "date": "2025-03-23T00:00:00Z",
+      "paymentMethod": "gopay"
+    }
+  ]
+}
