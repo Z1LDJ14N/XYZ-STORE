@@ -1,0 +1,21 @@
+{
+  "name": "xyz-ai-premium",
+  "version": "1.0.0",
+  "description": "XYZ AI Premium - Advanced AI Chat with Premium Features",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "export": "next export"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "next": "^14.0.0",
+    "@google/generative-ai": "^0.1.3",
+    "axios": "^1.6.0",
+    "three": "^r128",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.1.0"
+  }
+}
